@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Reserve a Table — Hot Nobbie Shabu Shabu</title>
+<style>
+  :root{
+    --ink:#1c1a17; --paper:#faf6ef; --accent:#b3402a; --accent-dark:#8f3220;
+    --line:#e3d9c8; --muted:#7a6f60; --ok:#2e7d4f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper); color:var(--ink); line-height:1.45;}
+  .wrap{max-width:520px; margin:0 auto; padding:20px 18px 48px;}
+  header{text-align:center; padding:14px 0 6px;}
+  header h1{margin:0; font-size:1.5rem; letter-spacing:.02em;}
+  header .sub{color:var(--muted); font-size:.95rem; margin-top:4px;}
+  .hours{display:flex; gap:8px; justify-content:center; margin:12px 0 4px; flex-wrap:wrap;}
+  .pill{border:1px solid var(--line); background:#fff; border-radius:999px;
+    padding:6px 14px; font-size:.85rem; color:var(--muted);}
+  h2{font-size:1.05rem; margin:26px 0 10px;}
+  .step-hint{font-size:.85rem; color:var(--muted); margin:-4px 0 10px;}
+  select, input[type=text], input[type=tel], textarea{
+    width:100%; font-size:1.05rem; padding:13px 12px; border:1.5px solid var(--line);
+    border-radius:12px; background:#fff; color:var(--ink); margin-bottom:12px;}
+  select:focus, input:focus, textarea:focus{outline:2px solid var(--accent); border-color:var(--accent);}
+  .slots{display:grid; grid-template-columns:repeat(4,1fr); gap:10px;}
+  .slot{border:1.5px solid var(--line); background:#fff; border-radius:12px;
+    padding:12px 4px; font-size:1rem; text-align:center; cursor:pointer; color:var(--ink);}
+  .slot small{display:block; font-size:.72rem; color:var(--muted);}
+  .slot.sel{background:var(--accent); border-color:var(--accent); color:#fff;}
+  .slot.sel small{color:#ffe9e2;}
+  .slot.full{opacity:.45; cursor:default;}
+  .party{display:flex; align-items:center; gap:14px; margin-bottom:12px;}
+  .party button{width:52px; height:52px; font-size:1.6rem; border-radius:50%;
+    border:1.5px solid var(--line); background:#fff; cursor:pointer; color:var(--ink);}
+  .party .n{font-size:1.6rem; min-width:64px; text-align:center; font-weight:600;}
+  .party .n small{display:block; font-size:.72rem; font-weight:400; color:var(--muted);}
+  #go{width:100%; margin-top:18px; padding:16px; font-size:1.15rem; font-weight:700;
+    color:#fff; background:var(--accent); border:none; border-radius:14px; cursor:pointer;}
+  #go:active{background:var(--accent-dark);}
+  #go:disabled{background:#c9bfae; cursor:default;}
+  .err{color:var(--accent-dark); font-size:.9rem; margin:8px 0 0; display:none;}
+  /* confirmation */
+  #done{display:none; text-align:center; padding:30px 0;}
+  #done .big{font-size:3rem;}
+  #done h2{font-size:1.3rem;}
+  #done .card{background:#fff; border:1px solid var(--line); border-radius:14px;
+    padding:16px; text-align:left; margin:16px 0;}
+  #done .card div{margin:6px 0;}
+  #done .card b{display:inline-block; min-width:92px; color:var(--muted); font-weight:500;}
+  #again{margin-top:10px; padding:12px 22px; font-size:1rem; border-radius:12px;
+    border:1.5px solid var(--line); background:#fff; cursor:pointer;}
+  footer{text-align:center; color:var(--muted); font-size:.82rem; margin-top:30px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="form">
+    <header>
+      <h1>🍲 Hot Nobbie Shabu Shabu</h1>
+      <div class="sub">464138 Highway 95, Sagle, ID · (208) 423-3857</div>
+    </header>
+    <div class="hours">
+      <span class="pill">Wednesdays only</span>
+      <span class="pill">5:00 – 9:00 PM</span>
+      <span class="pill">Parties up to 20</span>
+    </div>
+
+    <h2>1 · Pick a Wednesday</h2>
+    <select id="date"></select>
+
+    <h2>2 · Pick a time</h2>
+    <div class="step-hint">Last seating 8:30 PM</div>
+    <div class="slots" id="slots"></div>
+
+    <h2>3 · Party size</h2>
+    <div class="party">
+      <button id="minus" aria-label="Fewer guests">−</button>
+      <div class="n"><span id="pcount">2</span><small>guests</small></div>
+      <button id="plus" aria-label="More guests">+</button>
+    </div>
+
+    <h2>4 · Your info</h2>
+    <input type="text" id="name" placeholder="Name" autocomplete="name">
+    <input type="tel" id="phone" placeholder="Phone number" autocomplete="tel">
+    <textarea id="notes" rows="2" placeholder="Anything we should know? (optional)"></textarea>
+
+    <button id="go" disabled>Pick a time to continue</button>
+    <p class="err" id="err"></p>
+  </div>
+
+  <div id="done">
+    <div class="big">✅</div>
+    <h2>You're booked!</h2>
+    <p>We can't wait to see you Wednesday.</p>
+    <div class="card" id="summary"></div>
+    <p style="color:var(--muted); font-size:.9rem;">Show this screen or give your name at the door.</p>
+    <button id="again">Make another reservation</button>
+  </div>
+
+  <footer>Hot Nobbie Shabu Shabu · Open Wednesdays 5–9 PM</footer>
+</div>
+
+<script>
+// ---- Booking rules (locked 2026-10-23, capacity 2026-10-24) ----
+var SLOT_TIMES = ["5:00 PM","5:30 PM","6:00 PM","6:30 PM","7:00 PM","7:30 PM","8:00 PM","8:30 PM"];
+var MAX_PARTY = 20;
+var CAPACITY = 30; // two horseshoes of 15; stays average 50 minutes
+
+// Paste the deployed Apps Script web app URL here to go live.
+// Until then the page shows all slots and confirms on-screen only.
+var WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzXrmqAWUEIQkIw_AaCZMDyXhk6qeeQDvSfaBsjg66jsG_bYcKPFfvRC3KIOjai08ECHA/exec";
+var remaining = null; // { "17:00": seatsLeft, ... } for the chosen date
+
+var state = { dateISO:null, dateLabel:"", time:null, party:2 };
+
+// Upcoming Wednesdays (next 8), skipping today if already past 8:30 PM local
+(function fillDates(){
+  var sel = document.getElementById('date');
+  var d = new Date(); var added = 0;
+  while (added < 8){
+    d.setDate(d.getDate()+1);
+    if (d.getDay() === 3){ // Wednesday
+      var iso = d.toISOString().slice(0,10);
+      var label = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+      var opt = document.createElement('option');
+      opt.value = iso; opt.textContent = label;
+      sel.appendChild(opt); added++;
+    }
+  }
+  state.dateISO = sel.value;
+  state.dateLabel = sel.options[0].textContent;
+  sel.addEventListener('change', function(){
+    state.dateISO = sel.value;
+    state.dateLabel = sel.options[sel.selectedIndex].textContent;
+    state.time = null;
+    document.querySelectorAll('.slot').forEach(function(s){ s.classList.remove('sel'); });
+    validate();
+    refreshAvailability();
+  });
+})();
+
+// Time slots
+(function fillSlots(){
+  var box = document.getElementById('slots');
+  SLOT_TIMES.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'slot'; b.type = 'button';
+    b.innerHTML = t + '<small></small>';
+    b.dataset.key = to24(t);
+    b.addEventListener('click', function(){
+      if (b.classList.contains('full')) return;
+      box.querySelectorAll('.slot').forEach(function(s){ s.classList.remove('sel'); });
+      b.classList.add('sel');
+      state.time = t;
+      validate();
+    });
+    box.appendChild(b);
+  });
+})();
+
+// ---- Live availability (calendar-backed) ----
+function to24(t){
+  var m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  var h = parseInt(m[1],10);
+  if (m[3].toUpperCase()==="PM" && h!==12) h+=12;
+  if (m[3].toUpperCase()==="AM" && h===12) h=0;
+  return ("0"+h).slice(-2)+":"+m[2];
+}
+function renderSlots(){
+  document.querySelectorAll('.slot').forEach(function(s){
+    var sm = s.querySelector('small');
+    if (!remaining){ sm.textContent = ''; s.classList.remove('full'); return; }
+    var left = remaining[s.dataset.key];
+    sm.textContent = left > 0 ? left + ' seats left' : 'Full';
+    s.classList.toggle('full', left < state.party);
+    if (s.classList.contains('sel') && left < state.party){
+      s.classList.remove('sel'); state.time = null; validate();
+    }
+  });
+}
+function refreshAvailability(){
+  if (!WEBAPP_URL) return;
+  fetch(WEBAPP_URL + '?date=' + state.dateISO)
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if (d.ok){ remaining = d.remaining; renderSlots(); } })
+    .catch(function(){ /* check failed: keep all slots shown */ });
+}
+refreshAvailability();
+
+// Party stepper
+document.getElementById('minus').addEventListener('click', function(){
+  if (state.party > 1){ state.party--; document.getElementById('pcount').textContent = state.party; renderSlots(); validate(); }
+});
+document.getElementById('plus').addEventListener('click', function(){
+  if (state.party < MAX_PARTY){ state.party++; document.getElementById('pcount').textContent = state.party; renderSlots(); validate(); }
+});
+
+// Validation + submit
+var go = document.getElementById('go'), err = document.getElementById('err');
+function validate(){
+  var ok = !!state.time;
+  if (ok && remaining){
+    var left = remaining[to24(state.time)];
+    ok = left !== undefined && left >= state.party;
+  }
+  go.disabled = !ok;
+  go.textContent = ok ? "Reserve my table" : "Pick a time to continue";
+}
+function showErr(msg){ err.textContent = msg; err.style.display = 'block'; }
+go.addEventListener('click', function(){
+  err.style.display = 'none';
+  var name = document.getElementById('name').value.trim();
+  var phone = document.getElementById('phone').value.trim();
+  var notes = document.getElementById('notes').value.trim();
+  if (!name){ showErr("Please add your name."); return; }
+  if (!phone || phone.replace(/\D/g,'').length < 7){ showErr("Please add a valid phone number."); return; }
+
+  var booking = {
+    restaurant: "Hot Nobbie Shabu Shabu",
+    date: state.dateISO, dateLabel: state.dateLabel,
+    time: state.time, party: state.party,
+    name: name, phone: phone, notes: notes,
+    createdAt: new Date().toISOString()
+  };
+
+  // Live path: POST to the Apps Script bridge, which re-checks seats and
+  // creates the event on the northwestshabu calendar. Preview path (no URL
+  // pasted yet): confirm on-screen only, nothing is sent anywhere.
+  if (!WEBAPP_URL){
+    showConfirmation(booking);
+    return;
+  }
+  go.disabled = true; go.textContent = "Reserving…";
+  fetch(WEBAPP_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(booking)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.ok){ showConfirmation(booking); return; }
+    if (d.error === 'full'){
+      remaining = d.remaining; renderSlots();
+      showErr("Sorry — that time just filled up. Please pick another time.");
+    } else {
+      showErr("Something went wrong with the booking. Please try again.");
+    }
+    validate();
+  })
+  .catch(function(){
+    showErr("Couldn't reach the booking system. Please try again in a moment.");
+    validate();
+  });
+});
+function showConfirmation(booking){
+  var name = booking.name, phone = booking.phone, notes = booking.notes;
+  document.getElementById('summary').innerHTML =
+    "<div><b>Date</b>" + booking.dateLabel + "</div>" +
+    "<div><b>Time</b>" + booking.time + "</div>" +
+    "<div><b>Party</b>" + booking.party + " guest" + (booking.party>1?"s":"") + "</div>" +
+    "<div><b>Name</b>" + escapeHtml(name) + "</div>" +
+    "<div><b>Phone</b>" + escapeHtml(phone) + "</div>" +
+    (notes ? "<div><b>Notes</b>" + escapeHtml(notes) + "</div>" : "");
+  document.getElementById('form').style.display = 'none';
+  document.getElementById('done').style.display = 'block';
+  window.scrollTo(0,0);
+}
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+document.getElementById('again').addEventListener('click', function(){
+  document.getElementById('done').style.display = 'none';
+  document.getElementById('form').style.display = 'block';
+});
+validate();
+</script>
+</body>
+</html>
