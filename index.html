@@ -124,7 +124,13 @@ var state = { dateISO:null, dateLabel:"", time:null, party:2 };
   while (added < 8){
     d.setDate(d.getDate()+1);
     if (d.getDay() === 3){ // Wednesday
-      var iso = d.toISOString().slice(0,10);
+      // FIX 2026-10-27: build the date from LOCAL components, never
+      // toISOString() (UTC). After 5 PM PDT, UTC is already the next day,
+      // so a Wednesday pick was sent as Thursday — that is how Justine
+      // Emch's Oct 28 booking landed on Oct 29.
+      var iso = d.getFullYear() + "-" +
+        ("0" + (d.getMonth() + 1)).slice(-2) + "-" +
+        ("0" + d.getDate()).slice(-2);
       var label = d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
       var opt = document.createElement('option');
       opt.value = iso; opt.textContent = label;
@@ -246,6 +252,8 @@ go.addEventListener('click', function(){
     if (d.error === 'full'){
       remaining = d.remaining; renderSlots();
       showErr("Sorry — that time just filled up. Please pick another time.");
+    } else if (d.error === 'not_wednesday'){
+      showErr("Hot Nobbie is only open Wednesdays — please pick a Wednesday.");
     } else {
       showErr("Something went wrong with the booking. Please try again.");
     }
